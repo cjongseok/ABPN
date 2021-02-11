@@ -96,23 +96,37 @@ def eval():
         LR_270f = LR_270.transpose(Image.FLIP_LEFT_RIGHT)
 
         with torch.no_grad():
+            print('chop_forward 0')
             pred, time = chop_forward(LR, model, start, end)
+            print('chop_forward 90')
             pred_90, time_90 = chop_forward(LR_90, model, start, end)
+            print('chop_forward 180')
             pred_180, time_180 = chop_forward(LR_180, model, start, end)
+            print('chop_forward 270')
             pred_270, time_270 = chop_forward(LR_270, model, start, end)
+            print('chop_forward 0f')
             pred_f, time_f = chop_forward(LR_f, model, start, end)
+            print('chop_forward 90f')
             pred_90f, time_90f = chop_forward(LR_90f, model, start, end)
+            print('chop_forward 180f')
             pred_180f, time_180f = chop_forward(LR_180f, model, start, end)
+            print('chop_forward 270f')
             pred_270f, time_270f = chop_forward(LR_270f, model, start, end)
 
         compute_time = time + time_90 + time_180 + time_270 + time_f + time_90f + time_180f + time_270f
         test_results['runtime'].append(compute_time)  # milliseconds
+        print('rot90 90')
         pred_90 = np.rot90(pred_90, 3)
+        print('rot90 180')
         pred_180 = np.rot90(pred_180, 2)
+        print('rot90 270')
         pred_270 = np.rot90(pred_270, 1)
         pred_f = np.fliplr(pred_f)
+        print('rot90 90f')
         pred_90f = np.rot90(np.fliplr(pred_90f), 3)
+        print('rot90 180f')
         pred_180f = np.rot90(np.fliplr(pred_180f), 2)
+        print('rot90 270f')
         pred_270f = np.rot90(np.fliplr(pred_270f), 1)
         prediction = (pred + pred_90 + pred_180 + pred_270 + pred_f + pred_90f + pred_180f + pred_270f) * 255.0 / 8.0
         prediction = prediction.clip(0, 255)
@@ -179,6 +193,7 @@ def chop_forward(img, network, start, end):
     out_box = []
 
     for iteration, batch in enumerate(test_dataloader, 1):
+        torch.cuda.empty_cache()
         input = Variable(batch[0]).to(device)
 
         start.record()
